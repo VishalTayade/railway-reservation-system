@@ -1,6 +1,8 @@
 package com.railway.service.impl;
 
+import com.railway.dto.LoginRequest;
 import com.railway.dto.RegisterRequest;
+import com.railway.security.JwtService;
 import com.railway.entity.User;
 import com.railway.repository.UserRepository;
 import com.railway.service.UserService;
@@ -16,6 +18,7 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtService jwtService;
 
     @Override
     public String register(RegisterRequest request) {
@@ -40,5 +43,23 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
 
         return "User registered successfully";
+    }
+
+    @Override
+    public String login(LoginRequest request) {
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        boolean matches = passwordEncoder.matches(
+                request.getPassword(),
+                user.getPassword());
+
+        if (!matches) {
+            throw new RuntimeException("Invalid password");
+        }
+
+        return jwtService.generateToken(user.getEmail());
     }
 }
