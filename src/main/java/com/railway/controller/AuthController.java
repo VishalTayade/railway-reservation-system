@@ -1,12 +1,16 @@
 package com.railway.controller;
 
+import com.railway.dto.ApiResponse;
 import com.railway.dto.LoginRequest;
 import com.railway.dto.LoginResponse;
 import com.railway.dto.RegisterRequest;
 import com.railway.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDateTime;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -16,10 +20,17 @@ public class AuthController {
     private final UserService userService;
 
     @PostMapping("/register")
-    public String register(
+    public ResponseEntity<ApiResponse<Void>> register(
             @Valid @RequestBody RegisterRequest request) {
 
-        return userService.register(request);
+        userService.register(request);
+
+        return ResponseEntity.ok(
+                ApiResponse.<Void>builder()
+                        .success(true)
+                        .message("User registered successfully")
+                        .timestamp(LocalDateTime.now())
+                        .build());
     }
 
     @PostMapping("/login")
